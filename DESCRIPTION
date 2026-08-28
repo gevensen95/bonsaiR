@@ -1,0 +1,41 @@
+Package: bonsaiR
+Type: Package
+Title: R Wrapper for the Bonsai Single-Cell Tree Reconstruction Method
+Version: 0.1.0
+Author: person("Your", "Name", role = c("aut", "cre"))
+Maintainer: Your Name <you@example.com>
+Description: Provides an R interface, via reticulate and system calls, to the
+    Python/C++ Bonsai tool stack (Sanity, cellstates, Bonsai) for
+    reconstructing maximum-likelihood tree representations of single-cell
+    RNA-seq data starting from Seurat objects. Computationally heavy steps
+    (Sanity, cellstates, and the core Bonsai tree search) are run as external
+    CLI processes -- optionally under local MPI parallelization -- rather
+    than in-process, since Bonsai's tree search is designed around
+    multi-process MPI execution which is not achievable through an embedded
+    reticulate interpreter. Lightweight, single-process downstream analyses
+    (e.g. marker gene detection) are called directly via reticulate.
+License: CC BY-NC 4.0 + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    reticulate,
+    Seurat,
+    Matrix,
+    ape,
+    processx,
+    fs,
+    cli,
+    withr,
+    methods,
+    stats,
+    jsonlite,
+    parallel,
+    utils,
+    graphics,
+    grDevices
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0

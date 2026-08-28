@@ -1,0 +1,21 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+inst/
+
+# Pipeline output / working directories -- these hold real scRNA-seq data
+# (cell barcodes, gene expression) whenever this package is actually run,
+# not just synthetic test fixtures. Excluded broadly rather than by exact
+# name, since it's easy to run the pipeline straight in the repo directory
+# by accident.
+bonsai_test/
+bonsai_output/
+sanity_input/
+sanity_output/
+cellstates_output/
+bonsai_results/
+marker_genes/
+*.rds
+*.mtx
