@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Getting Started with bonsaiR: A Real-Data Walkthrough</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Getting Started with bonsaiR: A Real-Data
+Walkthrough</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>This vignette walks through the full <code>bonsaiR</code> pipeline on
+real (if small) single-cell data: <a href="https://satijalab.org/seurat/">Seurat</a>’s built-in
+<code>pbmc_small</code> object, an 80-cell, 230-gene subsample of a real
+10x Genomics PBMC dataset. It ships with Seurat itself, so this vignette
+needs no extra downloads.</p>
+<p>The pipeline takes a <code>Seurat</code> object with raw UMI counts
+and produces a maximum-likelihood tree representation of the cells
+(Bonsai, Moriel et al. 2025), via:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Sanity</strong> – Bayesian normalization that estimates, for
+every gene in every cell, both a point estimate of true expression and
+an error bar on that estimate.</li>
+<li><strong>cellstates</strong> – pre-clustering cells into
+statistically indistinguishable groups, used to “warm-start” the tree
+search.</li>
+<li><strong>Bonsai</strong> – the core maximum-likelihood tree
+reconstruction.</li>
+</ol>
+<p>Each step is a separate external tool (two Python, one C++), which is
+why <code>bonsai_install()</code> exists: it builds a dedicated conda
+environment and compiles the C++/Cython pieces for you, once.</p>
+<p><code>pbmc_small</code> is realistic in shape (real 10x PBMC counts,
+real dropout, real gene-expression noise) but still small enough that
+this entire vignette – including the actual Bonsai tree search – runs in
+well under half an hour on a laptop. <strong>This is not representative
+of runtime at Bonsai’s intended scale.</strong> Bonsai’s own
+documentation targets tens of thousands of cells, at which point the
+core tree search should be run with MPI across many cores (or on an HPC
+cluster), not interactively. This vignette deliberately uses
+<code>use_mpi = FALSE</code>: at 80 cells there is nothing to gain from
+parallelizing, and single-core avoids <a href="../reference/run_bonsai.html">a known intermittent race condition
+in Bonsai’s own core-calculation code</a> that has only been observed on
+small MPI runs like this one – see <code>?run_bonsai</code> for
+details.</p>
+</div>
+<div id="one-time-setup" class="section level2">
+<h2>One-time setup</h2>
+<p><code>bonsai_install()</code> creates a conda environment
+(<code>bonsai</code> by default) and clones + builds the Sanity and
+cellstates source repositories. This step is slow the first time
+(several minutes, more if a compiler toolchain needs installing) and
+instant on every subsequent call, since it skips any step that’s already
+done.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(bonsaiR)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(Seurat)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>benv <span class="ot">&lt;-</span> <span class="fu">bonsai_install</span>()</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>benv</span></code></pre></div>
+</div>
+<div id="the-data" class="section level2">
+<h2>The data</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;pbmc_small&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>pbmc_small</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># pbmc_small ships with pre-computed cluster identities from Seurat&#39;s own</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co"># tutorial -- we&#39;ll reuse these later to define marker-gene comparison</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co"># groups and to color the tree.</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">Idents</span>(pbmc_small))</span></code></pre></div>
+</div>
+<div id="step-1-sanity-normalization" class="section level2">
+<h2>Step 1: Sanity normalization</h2>
+<p><code>bonsai_write_sanity_input()</code> extracts raw counts from the
+Seurat object and writes them in the sparse Matrix Market format Sanity
+expects (with rows sorted, which Sanity’s own parser requires but
+<code>Matrix::writeMM()</code> does not guarantee on its own).
+<code>run_sanity()</code> then normalizes them, producing per-gene,
+per-cell expression estimates with error bars.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>work_dir <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="st">&quot;bonsaiR_pbmc_small_&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">dir.create</span>(work_dir)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>sanity_in <span class="ot">&lt;-</span> <span class="fu">bonsai_write_sanity_input</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  pbmc_small,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">file.path</span>(work_dir, <span class="st">&quot;sanity_input&quot;</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>sanity_in</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>sanity_out <span class="ot">&lt;-</span> <span class="fu">run_sanity</span>(</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  sanity_in, benv,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">file.path</span>(work_dir, <span class="st">&quot;sanity_output&quot;</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>sanity_out</span></code></pre></div>
+</div>
+<div id="step-2-cellstates-pre-clustering" class="section level2">
+<h2>Step 2: cellstates pre-clustering</h2>
+<p>cellstates operates on the same raw counts (not Sanity’s normalized
+output) to find cells that are statistically indistinguishable given
+measurement noise alone. <code>bonsai_write_config()</code> uses this
+clustering to build a “warm-start” tree, which substantially speeds up
+Bonsai’s search compared to starting from a plain star tree.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>cellstates_out <span class="ot">&lt;-</span> <span class="fu">run_cellstates</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  sanity_in, benv,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">file.path</span>(work_dir, <span class="st">&quot;cellstates_output&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>cellstates_out</span></code></pre></div>
+</div>
+<div id="step-3-configure-and-run-bonsai" class="section level2">
+<h2>Step 3: configure and run Bonsai</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>config <span class="ot">&lt;-</span> <span class="fu">bonsai_write_config</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">sanity_output =</span> sanity_out,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">cellstates_output =</span> cellstates_out,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">bonsai_env =</span> benv,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">dataset_name =</span> <span class="st">&quot;pbmc_small&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">results_folder =</span> <span class="fu">file.path</span>(work_dir, <span class="st">&quot;bonsai_results&quot;</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>config</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">run_bonsai</span>(config, benv, <span class="at">use_mpi =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>result</span></code></pre></div>
+</div>
+<div id="step-4-read-the-reconstructed-tree" class="section level2">
+<h2>Step 4: read the reconstructed tree</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">bonsai_read_tree</span>(result, benv)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>tree</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>ape<span class="sc">::</span><span class="fu">Ntip</span>(tree<span class="sc">$</span>phylo)   <span class="co"># number of leaves (cells)</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>ape<span class="sc">::</span><span class="fu">Nnode</span>(tree<span class="sc">$</span>phylo)  <span class="co"># number of internal nodes</span></span></code></pre></div>
+<p>A quick look at the tree, colored by the original Seurat
+clusters:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>cluster_by_cell <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">as.character</span>(<span class="fu">Idents</span>(pbmc_small)), <span class="fu">colnames</span>(pbmc_small))</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>tip_clusters <span class="ot">&lt;-</span> cluster_by_cell[tree<span class="sc">$</span>phylo<span class="sc">$</span>tip.label]</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>tip_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;0&quot;</span> <span class="ot">=</span> <span class="st">&quot;#4477AA&quot;</span>, <span class="st">&quot;1&quot;</span> <span class="ot">=</span> <span class="st">&quot;#EE6677&quot;</span>, <span class="st">&quot;2&quot;</span> <span class="ot">=</span> <span class="st">&quot;#228833&quot;</span>)[tip_clusters]</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>ape<span class="sc">::</span><span class="fu">plot.phylo</span>(tree<span class="sc">$</span>phylo, <span class="at">type =</span> <span class="st">&quot;fan&quot;</span>, <span class="at">show.tip.label =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>ape<span class="sc">::</span><span class="fu">tiplabels</span>(<span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> tip_colors, <span class="at">cex =</span> <span class="fl">0.6</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">&quot;topleft&quot;</span>, <span class="at">legend =</span> <span class="fu">names</span>(<span class="fu">table</span>(tip_clusters)), <span class="at">pch =</span> <span class="dv">16</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>       <span class="at">col =</span> tip_colors[<span class="sc">!</span><span class="fu">duplicated</span>(tip_clusters)], <span class="at">title =</span> <span class="st">&quot;Seurat cluster&quot;</span>)</span></code></pre></div>
+<p>If Bonsai’s tree reconstruction agrees with Seurat’s own clustering,
+cells from the same cluster should mostly fall into the same clade(s)
+rather than being scattered across the tree.</p>
+</div>
+<div id="step-5-marker-genes-between-two-clades" class="section level2">
+<h2>Step 5: marker genes between two clades</h2>
+<p><code>bonsai_marker_genes()</code> computes, for every gene, the
+probability that a randomly picked cell from group 1 has higher
+expression than a randomly picked cell from group 2 – Bonsai’s marker
+score. Scores near 0 or 1 indicate strong markers. Here we compare
+Seurat clusters <code>0</code> and <code>2</code>.</p>
+<p>Note this runs <code>bonsai_scout_preprocess.py</code> automatically
+the first time it’s called for a given results folder (building the
+visualization data <code>calc_marker_genes.py</code> needs, which
+<code>run_bonsai()</code> does not produce on its own) – this is skipped
+on subsequent calls.</p>
+<p><code>bonsai_marker_genes()</code> also merges cells with (near-)zero
+branch-length distance into single composite vertices before comparing
+groups (the same merging the Bonsai-scout visualization app does), and
+will error out if your two groups happen to split one of those merged
+clusters, rather than silently comparing something misleading – see
+<code>?bonsai_marker_genes</code> for details. Clusters <code>0</code>
+and <code>2</code> here don’t hit this; clusters <code>0</code> and
+<code>1</code> do, since a couple of <code>pbmc_small</code>’s cells
+landed in different Seurat clusters despite Bonsai finding them
+statistically indistinguishable.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>group1_cells <span class="ot">&lt;-</span> <span class="fu">names</span>(cluster_by_cell)[cluster_by_cell <span class="sc">==</span> <span class="st">&quot;0&quot;</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>group2_cells <span class="ot">&lt;-</span> <span class="fu">names</span>(cluster_by_cell)[cluster_by_cell <span class="sc">==</span> <span class="st">&quot;2&quot;</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>markers <span class="ot">&lt;-</span> <span class="fu">bonsai_marker_genes</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">bonsai_tree =</span> tree,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">group1_cells =</span> group1_cells,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">group2_cells =</span> group2_cells,</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">bonsai_env =</span> benv,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="at">bonsai_result =</span> result,</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="at">output_dir =</span> <span class="fu">file.path</span>(work_dir, <span class="st">&quot;marker_genes&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>)</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="fu">head</span>(markers, <span class="dv">10</span>)</span></code></pre></div>
+<p>The top hits are HLA class II genes (<code>HLA-DPB1</code>,
+<code>HLA-DPA1</code>, <code>HLA-DRB1</code>, <code>HLA-DQA1</code>, …)
+– the textbook markers separating antigen-presenting cells from other
+PBMC subsets, which is a good sign the reconstruction recovered real
+biological structure rather than noise.</p>
+</div>
+<div id="step-6-attach-everything-back-to-the-seurat-object" class="section level2">
+<h2>Step 6: attach everything back to the Seurat object</h2>
+<p>For downstream analysis in your normal Seurat workflow,
+<code>bonsai_to_seurat()</code> attaches the tree, posterior expression
+estimates, and cellstate labels directly onto the Seurat object.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>pbmc_small <span class="ot">&lt;-</span> <span class="fu">bonsai_to_seurat</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  pbmc_small, tree,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">cellstates_output =</span> cellstates_out</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co"># The full tree, plus per-cell posterior LTQs reordered to match the</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co"># Seurat object&#39;s own cell order:</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="fu">str</span>(pbmc_small<span class="sc">@</span>misc<span class="sc">$</span>bonsai, <span class="at">max.level =</span> <span class="dv">1</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="fu">dim</span>(pbmc_small<span class="sc">@</span>misc<span class="sc">$</span>bonsai<span class="sc">$</span>leaf_posterior_ltqs)</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co"># Cellstates cluster labels, as a regular metadata column:</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="fu">table</span>(pbmc_small<span class="sc">$</span>bonsai_cellstate)</span></code></pre></div>
+</div>
+<div id="next-steps" class="section level2">
+<h2>Next steps</h2>
+<ul>
+<li><strong>Scaling up:</strong> at tens of thousands of cells, re-run
+<code>run_bonsai()</code> with <code>use_mpi = TRUE</code> and a
+realistic <code>n_cores</code>, ideally on an HPC node – see
+<code>?run_bonsai</code> and Bonsai’s own README for guidance on
+scheduling this as a batch job rather than interactively.</li>
+<li><strong>A full smoke test:</strong> <code>bonsai_smoke_test()</code>
+runs this entire pipeline end-to-end on synthetic data with built-in
+pass/fail reporting per stage – useful for verifying a new
+<code>bonsai_install()</code> environment before pointing it at real
+data.</li>
+<li><strong>License note:</strong> the underlying Bonsai tool stack is
+distributed under CC-BY-NC-4.0 – not free for commercial use. Check this
+applies to your use case before relying on it.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

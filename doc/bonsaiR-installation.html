@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Installing bonsaiR: macOS and Linux</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Installing bonsaiR: macOS and Linux</h1>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><code>bonsaiR</code> wraps a real, non-trivial systems stack – conda,
+git, a compiled C++ binary (Sanity), a compiled Cython/C extension
+(cellstates), and MPI – not just an R package with CRAN dependencies.
+This vignette is purely about getting that stack set up correctly; see
+<code>vignette(&quot;bonsaiR-intro&quot;)</code> for actually using the package
+once installed.</p>
+<p><strong>Platform note up front:</strong> the macOS instructions below
+were worked out by actually hitting and fixing every failure mode
+described, on real Apple Silicon hardware. The Linux instructions are
+based on <code>bonsai_install()</code>’s own coded logic plus one real
+debugging session on an institutional HPC cluster (the
+shared-conda-cache issue below) – solid, but less exhaustively
+battle-tested than the macOS path. If you hit something not covered here
+on Linux, it’s genuinely useful information; consider it worth
+reporting.</p>
+<p>The two platforms differ in exactly one important way:
+<strong>macOS’s system compiler has no OpenMP support at all</strong>,
+which Linux’s does by default. Most of the macOS-specific steps below
+exist solely to work around that; skip straight to the Linux section if
+that’s your platform.</p>
+</div>
+<div id="common-prerequisites-both-platforms" class="section level2">
+<h2>Common prerequisites (both platforms)</h2>
+<ul>
+<li><strong>R</strong> (4.x), with <code>devtools</code> installed
+(<code>install.packages(&quot;devtools&quot;)</code>)</li>
+<li><strong>conda or Miniconda</strong>, with the <code>conda</code>
+command on your shell’s <code>PATH</code></li>
+<li><strong>git</strong></li>
+</ul>
+</div>
+<div id="macos-installation" class="section level2">
+<h2>macOS installation</h2>
+<div id="xcode-command-line-tools" class="section level3">
+<h3>1. Xcode Command Line Tools</h3>
+<p>Needed for <code>git</code> and basic build tools. If you don’t
+already have them:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">xcode-select</span> <span class="at">--install</span></span></code></pre></div>
+</div>
+<div id="homebrew" class="section level3">
+<h3>2. Homebrew</h3>
+<p>If you don’t already have it: <a href="https://brew.sh" class="uri">https://brew.sh</a></p>
+</div>
+<div id="a-real-cc-compiler-with-openmp-support" class="section level3">
+<h3>3. A real C/C++ compiler with OpenMP support</h3>
+<p><strong>This is the step that matters most on macOS.</strong> Apple’s
+system <code>clang</code> (the default <code>cc</code>/<code>gcc</code>
+you get without doing anything) has <em>no</em> OpenMP support
+whatsoever – not a missing flag, not a config issue, it simply cannot
+compile <code>-fopenmp</code> code. Both Sanity’s C++ build and
+cellstates’ Cython extension need real OpenMP. Install Homebrew’s GCC
+instead:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">brew</span> install gcc</span></code></pre></div>
+<p>You don’t need to configure anything further yourself –
+<code>bonsai_install()</code> detects Homebrew GCC automatically (by
+scanning for a versioned <code>gcc-N</code>/<code>g++-N</code> pair
+under <code>/opt/homebrew/opt/gcc/bin</code> or
+<code>/usr/local/opt/gcc/bin</code>) and uses it specifically for the
+steps that need OpenMP.</p>
+</div>
+<div id="system-openmpi" class="section level3">
+<h3>4. System OpenMPI</h3>
+<p>Needed if you want to run the core tree search with
+<code>use_mpi = TRUE</code> (recommended above ~2000 cells):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">brew</span> install openmpi</span></code></pre></div>
+</div>
+<div id="a-known-gotcha-a-broken-mpicc-can-shadow-the-working-one" class="section level3">
+<h3>5. A known gotcha: a broken <code>mpicc</code> can shadow the
+working one</h3>
+<p>If you also have Anaconda (not just Miniconda) installed, its base
+environment can ship its own <code>mpicc</code> wrapper script that
+expects a conda-toolchain compiler
+(e.g. <code>arm64-apple-darwin20.0.0-clang</code>) which was never
+actually installed – and depending on your shell’s <code>PATH</code>
+order, <em>that</em> broken <code>mpicc</code> can be found before the
+working Homebrew one, causing cryptic build failures. This is a real bug
+that was hit and fixed during this package’s own development, on this
+exact kind of setup.</p>
+<p>Check which <code>mpicc</code> your shell finds first, and whether it
+actually works:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="bu">command</span> <span class="at">-v</span> mpicc</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">mpicc</span> <span class="at">--version</span></span></code></pre></div>
+<p>If that fails with something like
+<code>arm64-apple-darwin20.0.0-clang: command not found</code>, you’ve
+hit this issue. <code>bonsai_install()</code> itself works around it
+internally (it explicitly forces the known-good compiler to the front of
+<code>PATH</code> for the specific build steps that need it), so
+<strong>this doesn’t block <code>bonsai_install()</code> from
+working</strong> – but if you’re also pre-installing packages manually
+(see “Pre-installing the conda environment” below), you need to apply
+the same fix yourself, since a plain <code>pip install mpi4py</code>
+will just use whatever <code>mpicc</code> is first on
+<code>PATH</code>.</p>
+</div>
+<div id="install-and-set-up-bonsair" class="section level3">
+<h3>6. Install and set up bonsaiR</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;gevensen95/bonsaiR&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">library</span>(bonsaiR)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>benv <span class="ot">&lt;-</span> <span class="fu">bonsai_install</span>()</span></code></pre></div>
+<p>This clones and compiles everything (slow the first time, fast on
+every subsequent call since each step is skipped if it’s already
+done).</p>
+</div>
+<div id="verify" class="section level3">
+<h3>7. Verify</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">bonsai_smoke_test</span>(<span class="at">bonsai_env =</span> benv)</span></code></pre></div>
+</div>
+</div>
+<div id="linux-installation" class="section level2">
+<h2>Linux installation</h2>
+<div id="compiler-and-mpi-packages" class="section level3">
+<h3>1. Compiler and MPI packages</h3>
+<p>Unlike macOS, Linux’s system <code>gcc</code> supports OpenMP
+natively – there is no Homebrew-GCC-equivalent workaround needed here.
+On Debian/Ubuntu:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">sudo</span> apt-get install build-essential libgomp1 libopenmpi-dev openmpi-bin git</span></code></pre></div>
+<p><code>libgomp1</code> is the OpenMP runtime specifically;
+<code>bonsai_install()</code> checks for it before attempting to build
+Sanity and gives a clear error naming this exact package if it’s
+missing.</p>
+<p>On other distributions, install the equivalent of: a C/C++ compiler
+(<code>gcc</code>/<code>g++</code>), the OpenMP runtime, an OpenMPI
+development package (providing <code>mpicc</code>), and
+<code>git</code>.</p>
+</div>
+<div id="condaminiconda" class="section level3">
+<h3>2. conda/Miniconda</h3>
+<p>If you don’t already have conda, install Miniconda: <a href="https://docs.conda.io/projects/miniconda/en/latest/" class="uri">https://docs.conda.io/projects/miniconda/en/latest/</a></p>
+</div>
+<div id="a-known-gotcha-sharedhpc-conda-installs-and-permission-errors" class="section level3">
+<h3>3. A known gotcha: shared/HPC conda installs and permission
+errors</h3>
+<p>If you’re on an institutional HPC cluster with a shared, multi-user
+conda installation (common – look for a <code>conda info</code> output
+showing a <code>base environment</code> path owned by IT/a shared group
+rather than you personally), you may hit a permission error like this
+when <code>bonsai_install()</code> (or a manual
+<code>conda create</code>) tries to write to the shared package
+cache:</p>
+<pre><code>PermissionError: [Errno 13] Permission denied:
+  &#39;/path/to/shared/miniconda3/pkgs/cache/....info.json&#39;</code></pre>
+<p>This is not a bonsaiR bug – it means conda is trying to write a
+lock/state file into a shared cache directory you don’t have write
+access to. Fix it by pointing conda at directories you actually own
+(this only edits your personal <code>~/.condarc</code>, not the shared
+system config, so it needs no admin permissions and doesn’t affect other
+users of the shared install):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">conda</span> config <span class="at">--add</span> pkgs_dirs ~/.conda/pkgs</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="ex">conda</span> config <span class="at">--add</span> envs_dirs ~/.conda/envs</span></code></pre></div>
+<p>Then retry. This fixes both a manual <code>conda create</code> and
+<code>bonsai_install()</code> itself, since both resolve through the
+same <code>pkgs_dirs</code>/<code>envs_dirs</code> search order.</p>
+</div>
+<div id="install-and-set-up-bonsair-1" class="section level3">
+<h3>4. Install and set up bonsaiR</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;gevensen95/bonsaiR&quot;</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">library</span>(bonsaiR)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>benv <span class="ot">&lt;-</span> <span class="fu">bonsai_install</span>()</span></code></pre></div>
+</div>
+<div id="verify-1" class="section level3">
+<h3>5. Verify</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">bonsai_smoke_test</span>(<span class="at">bonsai_env =</span> benv)</span></code></pre></div>
+</div>
+</div>
+<div id="pre-installing-the-conda-environment-ahead-of-time" class="section level2">
+<h2>Pre-installing the conda environment ahead of time</h2>
+<p>On either platform, you can set up just the conda environment and
+Python packages in advance (e.g. to save time later, or on a machine
+with limited internet access) without running the full
+<code>bonsai_install()</code>. This uses the exact same environment
+name, Python version, and pinned package versions
+<code>bonsai_install()</code> itself expects, so a later
+<code>bonsai_install()</code> call detects everything as already done
+and skips straight to cloning and compiling Sanity/cellstates – the one
+part of setup that has to happen fresh on every machine regardless,
+since it produces compiled, architecture-specific output.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-n</span> bonsai python=3.11 <span class="at">-y</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="bu">source</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">conda</span> info <span class="at">--base</span><span class="va">)</span><span class="st">/etc/profile.d/conda.sh&quot;</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="ex">conda</span> activate bonsai</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--upgrade</span> matplotlib==3.11.0 numpy==2.4.6 scipy==1.17.1 pandas==3.0.3 <span class="dt">\</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  scikit-learn==1.9.0 ruamel.yaml==0.19.1 psutil==7.2.2 shiny==1.6.3 faicons==0.2.2 <span class="dt">\</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  shinyswatch==0.11.0 jinja2==3.1.6 tables==3.11.1 h5py==3.16.0 natsort==8.4.0</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="bu">export</span> <span class="va">MPICC</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">command</span> <span class="at">-v</span> mpicc<span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">$MPICC</span><span class="st">&quot;</span><span class="va">)</span><span class="st">:</span><span class="va">$PATH</span><span class="st">&quot;</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">--upgrade</span> mpi4py==4.0.0</span></code></pre></div>
+<p>(This is the same sequence walked through step-by-step earlier in
+this package’s development, packaged into one block here – on macOS,
+double-check <code>$MPICC</code> is the <em>working</em>
+<code>mpicc</code> first, per the gotcha above, since a plain
+<code>command -v mpicc</code> isn’t guaranteed to find it.)</p>
+</div>
+<div id="caching-the-environment-object" class="section level2">
+<h2>Caching the environment object</h2>
+<p><code>bonsai_install()</code>’s return value (<code>benv</code>) is a
+plain list of file paths with nothing live or unserializable in it –
+safe to cache so you don’t need to re-run the (fast, but not free)
+existence checks every session:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>benv_path <span class="ot">&lt;-</span> <span class="st">&quot;~/.bonsaiR_env.rds&quot;</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(benv_path)) {</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  benv <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(benv_path)</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  benv <span class="ot">&lt;-</span> <span class="fu">bonsai_install</span>()</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  <span class="fu">saveRDS</span>(benv, benv_path)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>}</span></code></pre></div>
+<p>This is only valid on the machine it was created on, and goes stale
+if you later run <code>bonsai_install(force = TRUE)</code> or otherwise
+change the underlying environment – if functions using a cached
+<code>benv</code> start failing with path-not-found errors, regenerate
+it first.</p>
+</div>
+<div id="troubleshooting-checklist" class="section level2">
+<h2>Troubleshooting checklist</h2>
+<p>If <code>bonsai_install()</code> fails partway through, it’s almost
+always one of:</p>
+<ul>
+<li><strong>No <code>mpicc</code> on <code>PATH</code> at all</strong> –
+install system OpenMPI (<code>brew install openmpi</code> /
+<code>apt-get install openmpi-bin libopenmpi-dev</code>).</li>
+<li><strong>An <code>mpicc</code> is found, but it’s broken</strong> –
+macOS-specific; see the gotcha above. Check with
+<code>mpicc --version</code>, not just
+<code>command -v mpicc</code>.</li>
+<li><strong><code>libgomp1</code>/OpenMP runtime missing</strong> –
+Linux-specific; the error message from <code>bonsai_install()</code>
+names this package directly.</li>
+<li><strong>Permission errors writing to a shared conda install</strong>
+– HPC-specific; see the gotcha above.</li>
+<li><strong>A stale conda environment from a previous failed
+attempt</strong> – since every step is idempotent, first just re-run
+<code>bonsai_install(force = FALSE)</code> (the default) to retry only
+the step that failed. Only use <code>force = TRUE</code> (which rebuilds
+everything from scratch) if that doesn’t work.</li>
+</ul>
+<p>For anything else, <code>bonsai_install()</code>’s own output is
+streamed live and usually names the actual failing command – the fastest
+path to a fix is usually reading the last ~20 lines of that output
+rather than guessing.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

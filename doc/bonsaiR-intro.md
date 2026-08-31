@@ -1,0 +1,207 @@
+## Overview
+
+This vignette walks through the full `bonsaiR` pipeline on real (if
+small) single-cell data: [Seurat](https://satijalab.org/seurat/)’s
+built-in `pbmc_small` object, an 80-cell, 230-gene subsample of a real
+10x Genomics PBMC dataset. It ships with Seurat itself, so this vignette
+needs no extra downloads.
+
+The pipeline takes a `Seurat` object with raw UMI counts and produces a
+maximum-likelihood tree representation of the cells (Bonsai, Moriel et
+al. 2025), via:
+
+1.  **Sanity** – Bayesian normalization that estimates, for every gene
+    in every cell, both a point estimate of true expression and an error
+    bar on that estimate.
+2.  **cellstates** – pre-clustering cells into statistically
+    indistinguishable groups, used to “warm-start” the tree search.
+3.  **Bonsai** – the core maximum-likelihood tree reconstruction.
+
+Each step is a separate external tool (two Python, one C++), which is
+why `bonsai_install()` exists: it builds a dedicated conda environment
+and compiles the C++/Cython pieces for you, once.
+
+`pbmc_small` is realistic in shape (real 10x PBMC counts, real dropout,
+real gene-expression noise) but still small enough that this entire
+vignette – including the actual Bonsai tree search – runs in well under
+half an hour on a laptop. **This is not representative of runtime at
+Bonsai’s intended scale.** Bonsai’s own documentation targets tens of
+thousands of cells, at which point the core tree search should be run
+with MPI across many cores (or on an HPC cluster), not interactively.
+This vignette deliberately uses `use_mpi = FALSE`: at 80 cells there is
+nothing to gain from parallelizing, and single-core avoids [a known
+intermittent race condition in Bonsai’s own core-calculation
+code](../reference/run_bonsai.html) that has only been observed on small
+MPI runs like this one – see `?run_bonsai` for details.
+
+## One-time setup
+
+`bonsai_install()` creates a conda environment (`bonsai` by default) and
+clones + builds the Sanity and cellstates source repositories. This step
+is slow the first time (several minutes, more if a compiler toolchain
+needs installing) and instant on every subsequent call, since it skips
+any step that’s already done.
+
+    library(bonsaiR)
+    library(Seurat)
+
+    benv <- bonsai_install()
+    benv
+
+## The data
+
+    data("pbmc_small")
+    pbmc_small
+
+    # pbmc_small ships with pre-computed cluster identities from Seurat's own
+    # tutorial -- we'll reuse these later to define marker-gene comparison
+    # groups and to color the tree.
+    table(Idents(pbmc_small))
+
+## Step 1: Sanity normalization
+
+`bonsai_write_sanity_input()` extracts raw counts from the Seurat object
+and writes them in the sparse Matrix Market format Sanity expects (with
+rows sorted, which Sanity’s own parser requires but `Matrix::writeMM()`
+does not guarantee on its own). `run_sanity()` then normalizes them,
+producing per-gene, per-cell expression estimates with error bars.
+
+    work_dir <- tempfile("bonsaiR_pbmc_small_")
+    dir.create(work_dir)
+
+    sanity_in <- bonsai_write_sanity_input(
+      pbmc_small,
+      output_dir = file.path(work_dir, "sanity_input")
+    )
+    sanity_in
+
+    sanity_out <- run_sanity(
+      sanity_in, benv,
+      output_dir = file.path(work_dir, "sanity_output")
+    )
+    sanity_out
+
+## Step 2: cellstates pre-clustering
+
+cellstates operates on the same raw counts (not Sanity’s normalized
+output) to find cells that are statistically indistinguishable given
+measurement noise alone. `bonsai_write_config()` uses this clustering to
+build a “warm-start” tree, which substantially speeds up Bonsai’s search
+compared to starting from a plain star tree.
+
+    cellstates_out <- run_cellstates(
+      sanity_in, benv,
+      output_dir = file.path(work_dir, "cellstates_output")
+    )
+    cellstates_out
+
+## Step 3: configure and run Bonsai
+
+    config <- bonsai_write_config(
+      sanity_output = sanity_out,
+      cellstates_output = cellstates_out,
+      bonsai_env = benv,
+      dataset_name = "pbmc_small",
+      results_folder = file.path(work_dir, "bonsai_results")
+    )
+    config
+
+    result <- run_bonsai(config, benv, use_mpi = FALSE)
+    result
+
+## Step 4: read the reconstructed tree
+
+    tree <- bonsai_read_tree(result, benv)
+    tree
+
+    ape::Ntip(tree$phylo)   # number of leaves (cells)
+    ape::Nnode(tree$phylo)  # number of internal nodes
+
+A quick look at the tree, colored by the original Seurat clusters:
+
+    cluster_by_cell <- setNames(as.character(Idents(pbmc_small)), colnames(pbmc_small))
+    tip_clusters <- cluster_by_cell[tree$phylo$tip.label]
+    tip_colors <- c("0" = "#4477AA", "1" = "#EE6677", "2" = "#228833")[tip_clusters]
+
+    ape::plot.phylo(tree$phylo, type = "fan", show.tip.label = FALSE)
+    ape::tiplabels(pch = 16, col = tip_colors, cex = 0.6)
+    legend("topleft", legend = names(table(tip_clusters)), pch = 16,
+           col = tip_colors[!duplicated(tip_clusters)], title = "Seurat cluster")
+
+If Bonsai’s tree reconstruction agrees with Seurat’s own clustering,
+cells from the same cluster should mostly fall into the same clade(s)
+rather than being scattered across the tree.
+
+## Step 5: marker genes between two clades
+
+`bonsai_marker_genes()` computes, for every gene, the probability that a
+randomly picked cell from group 1 has higher expression than a randomly
+picked cell from group 2 – Bonsai’s marker score. Scores near 0 or 1
+indicate strong markers. Here we compare Seurat clusters `0` and `2`.
+
+Note this runs `bonsai_scout_preprocess.py` automatically the first time
+it’s called for a given results folder (building the visualization data
+`calc_marker_genes.py` needs, which `run_bonsai()` does not produce on
+its own) – this is skipped on subsequent calls.
+
+`bonsai_marker_genes()` also merges cells with (near-)zero branch-length
+distance into single composite vertices before comparing groups (the
+same merging the Bonsai-scout visualization app does), and will error
+out if your two groups happen to split one of those merged clusters,
+rather than silently comparing something misleading – see
+`?bonsai_marker_genes` for details. Clusters `0` and `2` here don’t hit
+this; clusters `0` and `1` do, since a couple of `pbmc_small`’s cells
+landed in different Seurat clusters despite Bonsai finding them
+statistically indistinguishable.
+
+    group1_cells <- names(cluster_by_cell)[cluster_by_cell == "0"]
+    group2_cells <- names(cluster_by_cell)[cluster_by_cell == "2"]
+
+    markers <- bonsai_marker_genes(
+      bonsai_tree = tree,
+      group1_cells = group1_cells,
+      group2_cells = group2_cells,
+      bonsai_env = benv,
+      bonsai_result = result,
+      output_dir = file.path(work_dir, "marker_genes")
+    )
+
+    head(markers, 10)
+
+The top hits are HLA class II genes (`HLA-DPB1`, `HLA-DPA1`, `HLA-DRB1`,
+`HLA-DQA1`, …) – the textbook markers separating antigen-presenting
+cells from other PBMC subsets, which is a good sign the reconstruction
+recovered real biological structure rather than noise.
+
+## Step 6: attach everything back to the Seurat object
+
+For downstream analysis in your normal Seurat workflow,
+`bonsai_to_seurat()` attaches the tree, posterior expression estimates,
+and cellstate labels directly onto the Seurat object.
+
+    pbmc_small <- bonsai_to_seurat(
+      pbmc_small, tree,
+      cellstates_output = cellstates_out
+    )
+
+    # The full tree, plus per-cell posterior LTQs reordered to match the
+    # Seurat object's own cell order:
+    str(pbmc_small@misc$bonsai, max.level = 1)
+    dim(pbmc_small@misc$bonsai$leaf_posterior_ltqs)
+
+    # Cellstates cluster labels, as a regular metadata column:
+    table(pbmc_small$bonsai_cellstate)
+
+## Next steps
+
+- **Scaling up:** at tens of thousands of cells, re-run `run_bonsai()`
+  with `use_mpi = TRUE` and a realistic `n_cores`, ideally on an HPC
+  node – see `?run_bonsai` and Bonsai’s own README for guidance on
+  scheduling this as a batch job rather than interactively.
+- **A full smoke test:** `bonsai_smoke_test()` runs this entire pipeline
+  end-to-end on synthetic data with built-in pass/fail reporting per
+  stage – useful for verifying a new `bonsai_install()` environment
+  before pointing it at real data.
+- **License note:** the underlying Bonsai tool stack is distributed
+  under CC-BY-NC-4.0 – not free for commercial use. Check this applies
+  to your use case before relying on it.
