@@ -152,23 +152,47 @@ bonsai_plot_collapsed_tree <- function(collapsed_tree,
   # no.margin = FALSE alone). Explicitly padding x.lim/y.lim well beyond
   # the tree's natural radius is the standard fix for this in ape.
   #
-  # A fixed multiplier on max_depth alone isn't enough once labels get
-  # longer than a short generic "cl_N" -- e.g. a bonsai_dominant_labels()
-  # result like "Hepatocytes (61%)" got clipped at the plot edge with a
-  # fixed 1.4x pad (verified). Scale the extra padding by the longest
-  # label's character count too, so it grows with the actual text.
-  longest_label <- max(nchar(phylo$tip.label))
-  pad <- max_depth * 1.4 + label_offset + max_depth * 0.09 * label_cex * longest_label
-  xylim <- c(-pad, pad)
-
+  # A first version of this padding guessed at how much room labels need
+  # from their character count. That guess had to be conservative enough
+  # to avoid clipping the worst case, which meant it was far too generous
+  # for the common case -- verified against a real 9-cluster render that
+  # came out with the actual tree occupying under half the canvas. Fan
+  # layout rotates each tip label to point radially outward, so a label's
+  # rendered *width* is exactly how far past its tip it extends, for any
+  # angle -- measuring that directly with strwidth() (which needs an
+  # actual plot region to measure against, hence the throwaway first pass
+  # below) replaces the guess with the exact figure, for both type =
+  # "fan" case only; other types are left to ape's own margin handling,
+  # which -- unlike fan's rotated labels -- it's designed to get right.
   plot_it <- function() {
-    ape::plot.phylo(
-      phylo, type = type, show.tip.label = TRUE,
-      edge.width = edge_width, edge.color = edge_color,
-      cex = label_cex, label.offset = label_offset, tip.color = tip_colors,
-      x.lim = xylim, y.lim = xylim,
-      ...
-    )
+    if (identical(type, "fan")) {
+      guess_pad <- max_depth * 3 + label_offset
+      guess_lim <- c(-guess_pad, guess_pad)
+      ape::plot.phylo(
+        phylo, type = type, show.tip.label = TRUE,
+        edge.width = edge_width, edge.color = edge_color,
+        cex = label_cex, label.offset = label_offset, tip.color = tip_colors,
+        x.lim = guess_lim, y.lim = guess_lim,
+        ...
+      )
+      label_extent <- max(graphics::strwidth(phylo$tip.label, cex = label_cex))
+      pad <- max_depth + label_offset + label_extent * 1.05
+      xylim <- c(-pad, pad)
+      ape::plot.phylo(
+        phylo, type = type, show.tip.label = TRUE,
+        edge.width = edge_width, edge.color = edge_color,
+        cex = label_cex, label.offset = label_offset, tip.color = tip_colors,
+        x.lim = xylim, y.lim = xylim,
+        ...
+      )
+    } else {
+      ape::plot.phylo(
+        phylo, type = type, show.tip.label = TRUE,
+        edge.width = edge_width, edge.color = edge_color,
+        cex = label_cex, label.offset = label_offset, tip.color = tip_colors,
+        ...
+      )
+    }
     ape::tiplabels(pch = 16, col = tip_colors, cex = tip_cex, adj = 0.5)
   }
 
