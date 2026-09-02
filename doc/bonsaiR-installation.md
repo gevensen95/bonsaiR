@@ -118,6 +118,36 @@ no Homebrew-GCC-equivalent workaround needed here. On Debian/Ubuntu:
 for it before attempting to build Sanity and gives a clear error naming
 this exact package if it’s missing.
 
+On RHEL/CentOS/Rocky and other `yum`/`dnf`-based distributions:
+
+    sudo yum install epel-release -y
+
+    sudo yum install gcc gcc-c++ libgomp openmpi openmpi-devel git -y
+
+(substitute `dnf` for `yum` on newer releases where `yum` is just an
+alias for it – both work identically for this).
+
+**This is not quite enough on its own.** Unlike Debian/Ubuntu’s
+`openmpi-bin`, the EL family’s `openmpi`/`openmpi-devel` packages
+deliberately do *not* put `mpicc`/`mpiexec` on `PATH` by default (to
+allow multiple MPI implementations to coexist) – they’re normally
+exposed via `module load mpi/openmpi-x86_64`. If your system doesn’t
+have environment modules set up (common on a bare/minimal install, or a
+shared machine where `module` isn’t configured for your account), add
+the OpenMPI bin directory to `PATH` directly instead:
+
+    find / -name "mpicc" -path "*openmpi*" 2>/dev/null
+
+    export PATH="/usr/lib64/openmpi/bin:$PATH"  # adjust to whatever the find above returned
+
+Verify it resolves before moving on:
+
+    mpicc --version
+
+Add the `export PATH=...` line to your `~/.bashrc` (or equivalent) so it
+persists across sessions – otherwise `bonsai_install()` will fail its
+`mpicc` check the next time you open a new shell.
+
 On other distributions, install the equivalent of: a C/C++ compiler
 (`gcc`/`g++`), the OpenMP runtime, an OpenMPI development package
 (providing `mpicc`), and `git`.
@@ -127,7 +157,64 @@ On other distributions, install the equivalent of: a C/C++ compiler
 If you don’t already have conda, install Miniconda:
 <https://docs.conda.io/projects/miniconda/en/latest/>
 
-### 3. A known gotcha: shared/HPC conda installs and permission errors
+### 3. A known gotcha: EOL CentOS 7’s package repos
+
+CentOS 7 reached end-of-life in mid-2024, and its default `yum` mirrors
+were taken offline as a result – `sudo yum install ...` on an unmodified
+CentOS 7 system fails with something like:
+
+    Could not resolve host: mirrorlist.centos.org
+
+(or a similar failure naming a `*.centos.org` mirror, sometimes for
+`centos-sclo-sclo` specifically if you also have Software Collections
+enabled). This isn’t a `bonsai_install()`/yum configuration issue – it
+means the repo definitions still point at CentOS’s live mirror service,
+which stopped serving CentOS 7 entirely. Point them at the frozen
+archive instead:
+
+    sudo sed -i \
+      -e 's/mirrorlist.centos.org/vault.centos.org/g' \
+      -e 's/^#.*baseurl=http/baseurl=http/g' \
+      -e 's/^mirrorlist=http/#mirrorlist=http/g' \
+      /etc/yum.repos.d/CentOS-*.repo
+
+Then retry the `yum install` commands above. If you don’t have `sudo`
+access to edit these repo files at all (common on a shared/managed
+system), the conda-only alternative below sidesteps the system package
+manager entirely.
+
+### 4. Alternative: installing OpenMPI via conda instead of the system package manager
+
+If you can’t get a working system OpenMPI in place – no `sudo` access, a
+broken/EOL repo you can’t fix yourself, or a shared HPC login node where
+you’d rather not touch system packages at all – you can install OpenMPI
+from conda-forge into the `bonsai` conda environment itself, skipping
+`yum`/`apt-get` for this piece entirely:
+
+    conda create -n bonsai python=3.11 -y
+
+    conda activate bonsai
+    conda install -c conda-forge openmpi -y
+
+**This has to happen before `bonsai_install()` runs, in the same shell/R
+session.** `bonsai_install()`’s very first step checks for `mpicc` on
+`PATH` and aborts immediately if it doesn’t find one – it does this
+*before* it creates or looks at any conda environment, so a
+conda-installed `mpicc` only satisfies that check if the `bonsai` env is
+already active (and therefore already on `PATH`) when you launch R:
+
+    conda activate bonsai
+    R
+
+    library(bonsaiR)
+    benv <- bonsai_install()  # reuses the already-active/created "bonsai" env
+
+This still needs a working C/C++ compiler with OpenMP support from the
+system (`gcc`/`g++` and `libgomp`) for building Sanity and cellstates –
+conda-forge’s OpenMPI only replaces the OpenMPI piece, not the whole
+toolchain.
+
+### 5. A known gotcha: shared/HPC conda installs and permission errors
 
 If you’re on an institutional HPC cluster with a shared, multi-user
 conda installation (common – look for a `conda info` output showing a
@@ -154,13 +241,13 @@ Then retry. This fixes both a manual `conda create` and
 `bonsai_install()` itself, since both resolve through the same
 `pkgs_dirs`/`envs_dirs` search order.
 
-### 4. Install and set up bonsaiR
+### 6. Install and set up bonsaiR
 
     devtools::install_github("gevensen95/bonsaiR")
     library(bonsaiR)
     benv <- bonsai_install()
 
-### 5. Verify
+### 7. Verify
 
     bonsai_smoke_test(bonsai_env = benv)
 
@@ -215,8 +302,17 @@ failing with path-not-found errors, regenerate it first.
 If `bonsai_install()` fails partway through, it’s almost always one of:
 
 - **No `mpicc` on `PATH` at all** – install system OpenMPI
-  (`brew install openmpi` /
-  `apt-get install openmpi-bin libopenmpi-dev`).
+  (`brew install openmpi` / `apt-get install openmpi-bin libopenmpi-dev`
+  / `yum install openmpi openmpi-devel`), or use the conda-only
+  alternative above if you can’t install system packages at all.
+- **`yum install openmpi ...` succeeds, but `mpicc` still isn’t found**
+  – RHEL/CentOS-specific; the EL family’s OpenMPI packages don’t put
+  `mpicc`/`mpiexec` on `PATH` by default. See the gotcha above (either
+  `module load mpi/openmpi-x86_64`, or add the OpenMPI bin directory to
+  `PATH` manually).
+- **`yum install` itself fails with a `mirrorlist.centos.org` (or
+  similar) resolution error** – CentOS 7 is end-of-life and its mirrors
+  are offline; see the `vault.centos.org` gotcha above.
 - **An `mpicc` is found, but it’s broken** – macOS-specific; see the
   gotcha above. Check with `mpicc --version`, not just
   `command -v mpicc`.
