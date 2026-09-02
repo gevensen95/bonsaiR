@@ -546,6 +546,20 @@ all – you can install OpenMPI from conda-forge into the
 <pre class="bash"><code>conda create -n bonsai python=3.11 -y</code></pre>
 <pre class="bash"><code>conda activate bonsai
 conda install -c conda-forge openmpi -y</code></pre>
+<p><strong>This alone isn’t enough – you also need conda-forge’s
+matching compiler toolchain.</strong> conda-forge’s OpenMPI build bakes
+in a specific compiler binary name for its <code>mpicc</code> wrapper to
+call (e.g. <code>x86_64-conda-linux-gnu-cc</code>), which doesn’t exist
+unless you also install it. Without it, installing <code>mpi4py</code>
+later fails with something like:</p>
+<pre><code>The Open MPI wrapper compiler was unable to find the specified compiler
+x86_64-conda-linux-gnu-cc in your PATH.</code></pre>
+<p>Fix it by installing conda-forge’s <code>compilers</code>
+meta-package into the same environment (verified – this is what the
+error above needs):</p>
+<pre class="bash"><code>conda install -c conda-forge compilers -y</code></pre>
+<p>Verify before moving on:</p>
+<pre class="bash"><code>mpicc --version</code></pre>
 <p><strong>This has to happen before <code>bonsai_install()</code> runs,
 in the same shell/R session.</strong> <code>bonsai_install()</code>’s
 very first step checks for <code>mpicc</code> on <code>PATH</code> and
@@ -665,6 +679,11 @@ directory to <code>PATH</code> manually).</li>
 <code>mirrorlist.centos.org</code> (or similar) resolution
 error</strong> – CentOS 7 is end-of-life and its mirrors are offline;
 see the <code>vault.centos.org</code> gotcha above.</li>
+<li><strong><code>mpi4py</code> fails to build with “unable to find the
+specified compiler x86_64-conda-linux-gnu-cc”</strong> – specific to
+installing OpenMPI via conda-forge; you also need
+<code>conda install -c conda-forge compilers -y</code> in the same
+environment. See the alternative above.</li>
 <li><strong>An <code>mpicc</code> is found, but it’s broken</strong> –
 macOS-specific; see the gotcha above. Check with
 <code>mpicc --version</code>, not just

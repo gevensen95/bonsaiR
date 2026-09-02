@@ -242,6 +242,31 @@ conda activate bonsai
 conda install -c conda-forge openmpi -y
 ```
 
+**This alone isn't enough -- you also need conda-forge's matching
+compiler toolchain.** conda-forge's OpenMPI build bakes in a specific
+compiler binary name for its `mpicc` wrapper to call (e.g.
+`x86_64-conda-linux-gnu-cc`), which doesn't exist unless you also
+install it. Without it, installing `mpi4py` later fails with something
+like:
+
+```
+The Open MPI wrapper compiler was unable to find the specified compiler
+x86_64-conda-linux-gnu-cc in your PATH.
+```
+
+Fix it by installing conda-forge's `compilers` meta-package into the
+same environment (verified -- this is what the error above needs):
+
+```{bash, eval = FALSE}
+conda install -c conda-forge compilers -y
+```
+
+Verify before moving on:
+
+```{bash, eval = FALSE}
+mpicc --version
+```
+
 **This has to happen before `bonsai_install()` runs, in the same
 shell/R session.** `bonsai_install()`'s very first step checks for
 `mpicc` on `PATH` and aborts immediately if it doesn't find one -- it
@@ -375,6 +400,10 @@ If `bonsai_install()` fails partway through, it's almost always one of:
 - **`yum install` itself fails with a `mirrorlist.centos.org` (or similar)
   resolution error** -- CentOS 7 is end-of-life and its mirrors are
   offline; see the `vault.centos.org` gotcha above.
+- **`mpi4py` fails to build with "unable to find the specified compiler
+  x86_64-conda-linux-gnu-cc"** -- specific to installing OpenMPI via
+  conda-forge; you also need `conda install -c conda-forge compilers -y`
+  in the same environment. See the alternative above.
 - **An `mpicc` is found, but it's broken** -- macOS-specific; see the
   gotcha above. Check with `mpicc --version`, not just `command -v mpicc`.
 - **`libgomp1`/OpenMP runtime missing** -- Linux-specific; the error
