@@ -15,6 +15,8 @@ bonsai_plot_tree(
   legend = TRUE,
   legend_position = "topleft",
   legend_ncol = 2,
+  legend_cex = 1,
+  legend_pt_cex = 1,
   type = "fan",
   tip_cex = 0.25,
   edge_width = 0.1,
@@ -56,6 +58,13 @@ Default \code{TRUE} (ignored if \code{tip_groups} is \code{NULL}).}
 
 \item{legend_ncol}{Number of columns in the legend. Default \code{2},
 since a single column can run tall with many groups.}
+
+\item{legend_cex}{Text size in the legend. Default \code{1} (base R's
+own default) -- reduce this (e.g. \code{0.6}) to shrink the legend box
+so it covers less of the tree, especially with many groups.}
+
+\item{legend_pt_cex}{Point/symbol size in the legend, independent of
+\code{legend_cex}. Default \code{1}.}
 
 \item{type}{Passed to \code{ape::plot.phylo()}. Default \code{"fan"};
 \code{"unrooted"} is another option worth trying.}
