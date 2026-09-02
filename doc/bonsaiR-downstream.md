@@ -1,8 +1,8 @@
 ## Overview
 
 This vignette covers three functions for analyzing a Bonsai tree once
-you’ve reconstructed it, building on the same `pbmc_small` example used
-in `vignette("bonsaiR-intro")`:
+you’ve reconstructed it, building on the same `pbmc3k` example used in
+`vignette("bonsaiR-intro")`:
 
 - `run_average_over_groups()` – noise-aware average expression per
   group, plus a ranking of which genes vary most across groups.
@@ -16,8 +16,8 @@ in `vignette("bonsaiR-intro")`:
 
 If you’ve already worked through `vignette("bonsaiR-intro")` you’ll have
 everything these functions need in your session already (`sanity_out`,
-`cellstates_out`, `result`, `tree`, `pbmc_small`); this vignette
-re-derives them from scratch so it also runs on its own.
+`cellstates_out`, `result`, `tree`, `pbmc3k`); this vignette re-derives
+them from scratch so it also runs on its own.
 
 ## Setup
 
@@ -27,14 +27,23 @@ explanation of each step.
     library(bonsaiR)
     library(Seurat)
 
-    benv <- bonsai_install()
+    benv_path <- "~/.bonsaiR_env.rds"
+
+    if (file.exists(benv_path)) {
+      benv <- readRDS(benv_path)
+    } else {
+      benv <- bonsai_install()
+      saveRDS(benv, benv_path)
+    }
     work_dir <- tempfile("bonsaiR_downstream_")
     dir.create(work_dir)
 
-    data("pbmc_small")
-    cluster_by_cell <- setNames(as.character(Idents(pbmc_small)), colnames(pbmc_small))
+    data("pbmc3k")
+    pbmc3k <- UpdateSeuratObject(pbmc3k)
+    Idents(pbmc3k) <- 'seurat_annotations'
+    cluster_by_cell <- setNames(as.character(Idents(pbmc3k)), colnames(pbmc3k))
 
-    sanity_in <- bonsai_write_sanity_input(pbmc_small, output_dir = file.path(work_dir, "sanity_input"))
+    sanity_in <- bonsai_write_sanity_input(pbmc3k, output_dir = file.path(work_dir, "sanity_input"))
     sanity_out <- run_sanity(sanity_in, benv, output_dir = file.path(work_dir, "sanity_output"))
     cellstates_out <- run_cellstates(sanity_in, benv, output_dir = file.path(work_dir, "cellstates_output"))
 
@@ -42,7 +51,7 @@ explanation of each step.
       sanity_output = sanity_out,
       cellstates_output = cellstates_out,
       bonsai_env = benv,
-      dataset_name = "pbmc_small",
+      dataset_name = "pbmc3k",
       results_folder = file.path(work_dir, "bonsai_results")
     )
     result <- run_bonsai(config, benv, use_mpi = FALSE)
@@ -56,7 +65,7 @@ testing one pair of clades, it summarizes every gene across *all* your
 groups at once, weighting each cell by its own Sanity error bar (not a
 plain mean).
 
-Here we group by `pbmc_small`’s own Seurat clusters, though any named
+Here we group by `pbmc3k`’s own Seurat clusters, though any named
 grouping works the same way – a Zone/cell-type annotation, cellstates
 labels, or clades you’ve identified by eye in the tree plot.
 
@@ -121,3 +130,46 @@ Pick whichever column’s granularity is useful for your analysis
 (e.g. via `table()` on each column to see how cluster sizes change
 across levels), the same way you’d choose a `k` when calling
 `stats::cutree()`.
+
+## Collapsing and plotting a reduced tree
+
+A tree plot at full single-cell scale is mostly noise – thousands of
+individual tips are impossible to read by eye. `bonsai_collapse_tree()`
+reduces the tree to one representative tip per cluster (via
+`ape::drop.tip()`, so branch lengths between cluster representatives
+stay phylogenetically meaningful, not just a random subsample), and
+`bonsai_plot_collapsed_tree()` plots the result with each point sized by
+how many original cells it represents.
+
+    finest <- tree_clusters[[ncol(tree_clusters)]]
+    tip_groups <- setNames(finest, rownames(tree_clusters))
+
+    reduced <- bonsai_collapse_tree(tree, tip_groups)
+    reduced
+
+    bonsai_plot_collapsed_tree(reduced)
+
+By default each cluster is labeled with its raw geometry-cluster ID
+(e.g. `cl_0`), which carries no biological meaning on its own – it’s
+just whichever subtree the distance-based cut happened to produce. If
+you have a separate annotation for the same cells, like
+`cluster_by_cell` from above, `bonsai_dominant_labels()` finds each
+cluster’s majority annotation and `bonsai_rename_clusters()` applies it,
+so the plot shows what each cluster actually *is* instead of an
+arbitrary ID:
+
+    dominant <- bonsai_dominant_labels(reduced, cluster_by_cell)
+    dominant
+
+    reduced <- bonsai_rename_clusters(reduced, dominant)
+    bonsai_plot_collapsed_tree(reduced)
+
+Each label’s percentage is the dominant annotation’s share of that
+cluster’s cells – a cluster labeled e.g. `"CD14+ Mono (95%)"` is a
+clean, well-separated group, while one at `"CD14+ Mono (55%)"` is a much
+more mixed bag that’s worth a closer look (e.g. at a finer-grained
+column of `tree_clusters`) before trusting the label. If two different
+clusters end up with the same dominant annotation,
+`bonsai_dominant_labels()` disambiguates them automatically (appending
+the original cluster ID) rather than producing a duplicate label
+`bonsai_rename_clusters()` would otherwise reject.
