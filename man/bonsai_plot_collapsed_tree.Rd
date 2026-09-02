@@ -8,12 +8,12 @@ bonsai_plot_collapsed_tree(
   collapsed_tree,
   colors = NULL,
   size_by_n = TRUE,
-  cex_range = c(0.8, 4),
-  label_cex = 0.8,
+  cex_range = NULL,
+  label_cex = NULL,
   label_offset = NULL,
   file = NULL,
-  width = 2000,
-  height = 2000,
+  width = NULL,
+  height = NULL,
   res = 300,
   type = "fan",
   edge_width = 1,
@@ -37,9 +37,15 @@ drawn 100x bigger. If \code{FALSE}, all points are the same size
 (\code{mean(cex_range)}).}
 
 \item{cex_range}{Numeric length-2 vector, the point size range used when
-\code{size_by_n = TRUE}. Default \code{c(0.8, 4)}.}
+\code{size_by_n = TRUE}. Default \code{NULL}, which shrinks the upper
+bound as the number of clusters grows beyond ~10 -- each additional
+cluster shares less of the circle's circumference in \code{type =
+"fan"}, so a size tuned by eye for a handful of clusters starts
+overlapping its neighbors once there are many (verified). Pass an
+explicit \code{c(min, max)} to override this scaling.}
 
-\item{label_cex}{Text size for cluster labels. Default \code{0.8}.}
+\item{label_cex}{Text size for cluster labels. Default \code{NULL}, which
+shrinks it the same way and for the same reason as \code{cex_range}.}
 
 \item{label_offset}{Gap between each point and its label, in the same
 units as the tree's branch lengths. Default \code{NULL}, which picks a
@@ -51,9 +57,15 @@ regardless of your data's branch-length units.}
 plots to the current graphics device.}
 
 \item{width, height, res}{Passed to \code{png()}/\code{pdf()} when
-\code{file} is given. Defaults \code{2000}, \code{2000}, \code{300} --
-smaller than \code{bonsai_plot_tree()}'s defaults, since a collapsed
-tree has far fewer elements to render.}
+\code{file} is given. \code{width}/\code{height} default to \code{NULL},
+which scales the canvas up with the number of clusters -- point size in
+\code{cex} units is roughly a fixed physical size regardless of canvas
+size, so a bigger canvas is what actually gives more clusters more room
+before they start overlapping (verified: a fixed \code{2000} stayed
+crowded at 10 clusters even after shrinking point/label size, while
+doubling the canvas at the same point size fixed it directly). A fixed
+\code{2000} was tuned by eye for a handful of clusters and is kept as
+the floor. \code{res} defaults to \code{300}.}
 
 \item{type}{Passed to \code{ape::plot.phylo()}. Default \code{"fan"}.}
 

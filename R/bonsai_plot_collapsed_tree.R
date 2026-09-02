@@ -21,8 +21,14 @@
 #'   drawn 100x bigger. If \code{FALSE}, all points are the same size
 #'   (\code{mean(cex_range)}).
 #' @param cex_range Numeric length-2 vector, the point size range used when
-#'   \code{size_by_n = TRUE}. Default \code{c(0.8, 4)}.
-#' @param label_cex Text size for cluster labels. Default \code{0.8}.
+#'   \code{size_by_n = TRUE}. Default \code{NULL}, which shrinks the upper
+#'   bound as the number of clusters grows beyond ~10 -- each additional
+#'   cluster shares less of the circle's circumference in \code{type =
+#'   "fan"}, so a size tuned by eye for a handful of clusters starts
+#'   overlapping its neighbors once there are many (verified). Pass an
+#'   explicit \code{c(min, max)} to override this scaling.
+#' @param label_cex Text size for cluster labels. Default \code{NULL}, which
+#'   shrinks it the same way and for the same reason as \code{cex_range}.
 #' @param label_offset Gap between each point and its label, in the same
 #'   units as the tree's branch lengths. Default \code{NULL}, which picks a
 #'   value proportional to the tree's own depth so it scales sensibly
@@ -31,9 +37,15 @@
 #'   \code{.pdf}, inferred from the extension). If \code{NULL} (default),
 #'   plots to the current graphics device.
 #' @param width,height,res Passed to \code{png()}/\code{pdf()} when
-#'   \code{file} is given. Defaults \code{2000}, \code{2000}, \code{300} --
-#'   smaller than \code{bonsai_plot_tree()}'s defaults, since a collapsed
-#'   tree has far fewer elements to render.
+#'   \code{file} is given. \code{width}/\code{height} default to \code{NULL},
+#'   which scales the canvas up with the number of clusters -- point size in
+#'   \code{cex} units is roughly a fixed physical size regardless of canvas
+#'   size, so a bigger canvas is what actually gives more clusters more room
+#'   before they start overlapping (verified: a fixed \code{2000} stayed
+#'   crowded at 10 clusters even after shrinking point/label size, while
+#'   doubling the canvas at the same point size fixed it directly). A fixed
+#'   \code{2000} was tuned by eye for a handful of clusters and is kept as
+#'   the floor. \code{res} defaults to \code{300}.
 #' @param type Passed to \code{ape::plot.phylo()}. Default \code{"fan"}.
 #' @param edge_width,edge_color De-emphasize branches relative to points.
 #'   Defaults \code{1} and \code{"grey50"} -- less extreme than
@@ -55,11 +67,11 @@
 bonsai_plot_collapsed_tree <- function(collapsed_tree,
                                         colors = NULL,
                                         size_by_n = TRUE,
-                                        cex_range = c(0.8, 4),
-                                        label_cex = 0.8,
+                                        cex_range = NULL,
+                                        label_cex = NULL,
                                         label_offset = NULL,
                                         file = NULL,
-                                        width = 2000, height = 2000, res = 300,
+                                        width = NULL, height = NULL, res = 300,
                                         type = "fan",
                                         edge_width = 1,
                                         edge_color = "grey50",
@@ -70,6 +82,23 @@ bonsai_plot_collapsed_tree <- function(collapsed_tree,
   }
   phylo <- collapsed_tree$phylo
   sizes <- collapsed_tree$sizes[phylo$tip.label]
+  n_tips <- length(phylo$tip.label)
+
+  # A fixed cex_range/label_cex tuned by eye for a handful of clusters
+  # overlaps badly once there are many more of them sharing the same 360
+  # degrees (verified: cex_range = c(0.8, 4) at 10 clusters produced
+  # touching/overlapping points and collided labels). Shrink both
+  # proportionally once there are more than a comfortable ~10 clusters,
+  # unless the caller passed an explicit value.
+  crowding_factor <- min(1, 10 / n_tips)
+  if (is.null(cex_range)) {
+    cex_range <- c(0.8, max(1.5, 4 * crowding_factor))
+  }
+  if (is.null(label_cex)) {
+    label_cex <- max(0.5, 0.8 * crowding_factor)
+  }
+  if (is.null(width)) width <- max(2000, 450 * n_tips)
+  if (is.null(height)) height <- max(2000, 450 * n_tips)
 
   if (is.null(colors)) {
     n <- length(phylo$tip.label)
