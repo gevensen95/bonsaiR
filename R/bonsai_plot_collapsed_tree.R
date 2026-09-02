@@ -122,7 +122,14 @@ bonsai_plot_collapsed_tree <- function(collapsed_tree,
   # clipped at the device edge (verified -- this happened even with
   # no.margin = FALSE alone). Explicitly padding x.lim/y.lim well beyond
   # the tree's natural radius is the standard fix for this in ape.
-  pad <- max_depth * 1.4
+  #
+  # A fixed multiplier on max_depth alone isn't enough once labels get
+  # longer than a short generic "cl_N" -- e.g. a bonsai_dominant_labels()
+  # result like "Hepatocytes (61%)" got clipped at the plot edge with a
+  # fixed 1.4x pad (verified). Scale the extra padding by the longest
+  # label's character count too, so it grows with the actual text.
+  longest_label <- max(nchar(phylo$tip.label))
+  pad <- max_depth * 1.4 + label_offset + max_depth * 0.09 * label_cex * longest_label
   xylim <- c(-pad, pad)
 
   plot_it <- function() {
