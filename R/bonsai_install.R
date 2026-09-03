@@ -40,6 +40,13 @@
 #'     \item{cellstates_repo}{Path to the cellstates repo.}
 #'     \item{cellstates_script}{Path to cellstates' CLI entry point
 #'       (\code{scripts/run_cellstates.py}).}
+#'     \item{conda_bin}{Path to the conda binary used to create
+#'       \code{env_name}. Downstream functions in this package set
+#'       \code{RETICULATE_CONDA} to this path before resolving the
+#'       environment, so a cached \code{bonsai_env} (e.g. via
+#'       \code{saveRDS()}/\code{readRDS()}) keeps working in a later R
+#'       session even if that session's own \code{PATH} wouldn't
+#'       otherwise let reticulate rediscover conda on its own.}
 #'   }
 #'   This object is intended to be passed as the \code{bonsai_env} argument
 #'   to the other functions in this package (\code{run_sanity()},
@@ -79,6 +86,27 @@ bonsai_install <- function(env_name = "bonsai",
   cli::cli_alert_success("Found system OpenMPI at {mpicc_path}")
 
   # ---- 2. Create (or reuse) the conda environment ----
+  # Resolve the conda binary explicitly (rather than letting reticulate
+  # rediscover it implicitly on every call) and store it in the returned
+  # bonsai_env below. reticulate's own autodetection re-runs fresh in
+  # every R process (checking RETICULATE_CONDA, a handful of common
+  # install paths, then PATH) and isn't cached across sessions -- a
+  # cached benv (e.g. from an earlier vignette's saveRDS()/readRDS()
+  # pattern) can silently stop resolving conda in a later session whose
+  # PATH differs from the one bonsai_install() originally ran in, e.g. a
+  # cluster job launched without the interactive shell's module/PATH
+  # setup (verified -- this happened on a real HPC run: Sanity, which
+  # doesn't touch conda, succeeded, but the next step's
+  # reticulate::conda_python() failed with "Unable to find conda binary"
+  # in the same script). Recording the known-good path here lets
+  # downstream functions force reticulate to use it via RETICULATE_CONDA
+  # instead of re-guessing.
+  conda_bin <- tryCatch(reticulate::conda_binary(), error = function(e) {
+    cli::cli_abort(c(
+      "Unable to locate a conda binary.",
+      "i" = "Install Miniconda/Anaconda, or if it's already installed under a nonstandard path, set {.code Sys.setenv(RETICULATE_CONDA = \"/path/to/conda\")} before calling {.fn bonsai_install}."
+    ))
+  })
   existing_envs <- tryCatch(reticulate::conda_list()$name, error = function(e) character(0))
 
   if (force || !(env_name %in% existing_envs)) {
@@ -336,7 +364,8 @@ bonsai_install <- function(env_name = "bonsai",
       sanity_repo = sanity_repo,
       sanity_bin = sanity_bin,
       cellstates_repo = cellstates_repo,
-      cellstates_script = cellstates_script
+      cellstates_script = cellstates_script,
+      conda_bin = as.character(conda_bin)
     ),
     class = "bonsai_env"
   )
@@ -347,6 +376,7 @@ print.bonsai_env <- function(x, ...) {
   cli::cli_h3("bonsai_env")
   cli::cli_bullets(c(
     "*" = "conda env: {.val {x$env_name}}",
+    "*" = "conda binary: {x$conda_bin}",
     "*" = "Bonsai repo: {x$bonsai_repo}",
     "*" = "Sanity binary: {x$sanity_bin}",
     "*" = "cellstates script: {x$cellstates_script}"

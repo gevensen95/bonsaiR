@@ -121,6 +121,7 @@ bonsai_cluster_by_annotation <- function(bonsai_result,
     cell_names_file <- fs::path(output_dir, "cell_names.txt")
     writeLines(cell_ids, cell_names_file)
 
+    bonsai_use_conda(bonsai_env)
     py_bin <- fs::path(reticulate::conda_python(envname = bonsai_env$env_name))
     args <- c(
       as.character(script),

@@ -87,6 +87,7 @@ run_cellstates <- function(sanity_input,
     ))
   }
 
+  bonsai_use_conda(bonsai_env)
   py_bin <- fs::path(reticulate::conda_python(envname = bonsai_env$env_name))
 
   args <- c(

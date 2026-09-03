@@ -114,6 +114,7 @@ bonsai_write_config <- function(sanity_output,
     NULL
   }
 
+  bonsai_use_conda(bonsai_env)
   py_bin <- fs::path(reticulate::conda_python(envname = bonsai_env$env_name))
   create_config_script <- fs::path(bonsai_env$bonsai_repo, "bonsai", "create_config_file.py")
 

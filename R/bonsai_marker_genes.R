@@ -111,6 +111,7 @@ bonsai_marker_genes <- function(bonsai_tree = NULL,
     cli::cli_abort("{.arg group1_cells} and {.arg group2_cells} overlap ({length(overlap)} shared IDs) -- they must be disjoint clades.")
   }
 
+  bonsai_use_conda(bonsai_env)
   py_bin <- fs::path(reticulate::conda_python(envname = bonsai_env$env_name))
 
   # ---- Step 1: build bonsai_vis_data.hdf / bonsai_vis_settings.json if needed ----

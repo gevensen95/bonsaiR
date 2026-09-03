@@ -115,6 +115,7 @@ bonsai_read_tree <- function(bonsai_result, bonsai_env, load_posteriors = TRUE) 
     var_path <- fs::path(final_dir, "posterior_ltqsVars_vertByGene.npy")
 
     if (fs::file_exists(ltq_path) && fs::file_exists(var_path)) {
+      bonsai_use_conda(bonsai_env)
       reticulate::use_condaenv(bonsai_env$env_name, required = TRUE)
       np <- reticulate::import("numpy", convert = TRUE)
       posterior_ltqs <- np$load(as.character(ltq_path))

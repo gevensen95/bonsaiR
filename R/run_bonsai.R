@@ -92,6 +92,7 @@ run_bonsai <- function(bonsai_config,
     cli::cli_abort("Could not find {bonsai_main_abs} -- check the Bonsai repo layout at {bonsai_env$bonsai_repo}.")
   }
 
+  bonsai_use_conda(bonsai_env)
   py_bin <- as.character(fs::path(reticulate::conda_python(envname = bonsai_env$env_name)))
 
   base_args <- c(

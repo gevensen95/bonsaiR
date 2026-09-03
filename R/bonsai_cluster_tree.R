@@ -83,6 +83,7 @@ bonsai_cluster_tree <- function(bonsai_result,
   }
   nwk_str <- readLines(as.character(nwk_files[[1]]), n = 1, warn = FALSE)
 
+  bonsai_use_conda(bonsai_env)
   reticulate::use_condaenv(bonsai_env$env_name, required = TRUE)
   # import_from_path(), not import(): this module lives in the cloned
   # Bonsai repo, not an installed package, and its own module-level code

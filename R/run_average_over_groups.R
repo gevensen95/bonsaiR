@@ -102,6 +102,7 @@ run_average_over_groups <- function(sanity_output,
     group_file <- fs::path(output_dir, "group_assignments.tsv")
     writeLines(paste(cell_ids, group_vals, sep = "\t"), group_file)
 
+    bonsai_use_conda(bonsai_env)
     py_bin <- fs::path(reticulate::conda_python(envname = bonsai_env$env_name))
     args <- c(
       as.character(script),

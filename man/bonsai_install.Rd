@@ -44,6 +44,13 @@ An S3 object of class \code{bonsai_env}, a list with elements:
     \item{cellstates_repo}{Path to the cellstates repo.}
     \item{cellstates_script}{Path to cellstates' CLI entry point
       (\code{scripts/run_cellstates.py}).}
+    \item{conda_bin}{Path to the conda binary used to create
+      \code{env_name}. Downstream functions in this package set
+      \code{RETICULATE_CONDA} to this path before resolving the
+      environment, so a cached \code{bonsai_env} (e.g. via
+      \code{saveRDS()}/\code{readRDS()}) keeps working in a later R
+      session even if that session's own \code{PATH} wouldn't
+      otherwise let reticulate rediscover conda on its own.}
   }
   This object is intended to be passed as the \code{bonsai_env} argument
   to the other functions in this package (\code{run_sanity()},
