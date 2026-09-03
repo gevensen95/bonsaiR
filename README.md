@@ -2,6 +2,8 @@
 
 An R interface to [Bonsai](https://www.biorxiv.org/content/10.1101/2025.05.08.652944v1), a Bayesian method for reconstructing maximum-likelihood tree representations of single-cell RNA-seq data — an alternative to UMAP/t-SNE embeddings that represents cells as a tree rather than a 2D layout, with branch lengths approximating true high-dimensional distances between cells.
 
+> **Note:** `bonsaiR` is an independent, unofficial R port of the Bonsai tool stack, created without solicitation or authorization from the original Bonsai authors. It is not affiliated with, endorsed by, or maintained by them. All credit for the underlying method and tools belongs to the original authors — see [Citation](#citation) below, and please direct questions about the algorithm itself (as opposed to this R wrapper) to the [original repository](https://github.com/dhdegroot/Bonsai-data-representation).
+
 `bonsaiR` takes a `Seurat` object with raw UMI counts and drives it through the full Bonsai tool stack:
 
 1. **[Sanity](https://github.com/jmbreda/Sanity)** — Bayesian normalization producing, for every gene in every cell, a point estimate of true expression *and* an error bar on that estimate.
@@ -101,8 +103,10 @@ This package is licensed under **CC-BY-NC-4.0** (non-commercial use only) — ma
 
 ## Citation
 
-If you use this, please cite the Bonsai paper:
+`bonsaiR` is just a wrapper — if you use it, please cite the original Bonsai software and paper, not this package:
 
 > de Groot, D.H., Morillo Leonardo, S.X., Pachkov, M., & van Nimwegen, E. (2025). *Bonsai: Tree representations for distortion-free visualization and exploratory analysis of single-cell omics data.* bioRxiv. https://doi.org/10.1101/2025.05.08.652944
 
 This has since been peer-reviewed and published as de Groot et al., *Nature Biotechnology* (2026), https://doi.org/10.1038/s41587-026-03220-2.
+
+> de Groot, D.H., Morillo Leonardo, S.X., Pachkov, M., & van Nimwegen, E. (2026). *Bonsai-data-representation* (v1.0.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.20370956
